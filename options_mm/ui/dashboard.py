@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta, timezone
 import time as time_module
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -14,6 +15,9 @@ from options_mm.engine.position import PositionManager
 from options_mm.engine.quote_engine import Quote, QuoteEngine
 from options_mm.pricing.bsm import BSMResult, price_bsm
 from options_mm.pricing.iv_solver import solve_iv
+
+MARKET_TIMEZONE = "America/New_York"
+LOCAL_TIMEZONE = "America/Chicago"
 
 
 def run_dashboard() -> None:
@@ -52,9 +56,16 @@ def run_dashboard() -> None:
     else:
         replay_date = st.sidebar.date_input("Replay date", value=date.today())
         replay_time = st.sidebar.time_input("Start time", value=time(9, 30))
+        replay_timezone = st.sidebar.selectbox(
+            "Replay timezone",
+            [MARKET_TIMEZONE, LOCAL_TIMEZONE, "UTC"],
+            index=0,
+        )
         replay_speed = st.sidebar.number_input("Replay speed", min_value=1, value=1, step=1)
         refresh_seconds = config.REPLAY_REFRESH_SECONDS
-        requested_start = datetime.combine(replay_date, replay_time).replace(tzinfo=timezone.utc)
+        requested_start = datetime.combine(replay_date, replay_time).replace(
+            tzinfo=ZoneInfo(replay_timezone)
+        )
 
         c1, c2 = st.sidebar.columns(2)
         if c1.button("Start replay"):
@@ -109,8 +120,8 @@ def run_dashboard() -> None:
     )
 
     st.caption(
-        f"Mode: {clock_mode} | Simulator time: {sim_time.isoformat()} | "
-        f"{'running' if state.clock_running else 'paused'}"
+            f"Mode: {clock_mode} | Simulator time: {sim_time.isoformat()} | "
+            f"{'running' if state.clock_running else 'paused'}"
     )
     for fill in fills:
         st.toast(f"Filled {fill.direction} {fill.quantity} {fill.contract.option_type} {fill.contract.strike} at {fill.price:.2f}")
@@ -119,6 +130,10 @@ def run_dashboard() -> None:
 
     with chain_tab:
         st.metric("Spot", f"{spot:.2f}")
+        st.caption(
+            "Replay times default to New York market time. Historical spot uses "
+            "minute bars with second-by-second interpolation."
+        )
         columns = [
             "contractSymbol",
             "option_type",

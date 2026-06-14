@@ -43,7 +43,7 @@ Then open the local URL printed by Streamlit.
 The sidebar includes two clock modes:
 
 - `Current`: polls yfinance/FRED on a refresh interval and automatically reruns the dashboard while live mode is running.
-- `Replay past`: choose a historical date and start time, then play the underlying forward second by second. yfinance provides intraday minute bars, so replay interpolates the underlying price between minute closes and reprices the option chain from that simulated spot.
+- `Replay past`: choose a historical date and start time, then play the underlying forward second by second. Replay times default to New York market time, so `9:30` means the U.S. equity market open. yfinance provides intraday minute bars, so replay interpolates the underlying price between minute closes and reprices the option chain from that simulated spot.
 
 Active quotes are monitored on every clock tick. If the simulated/live market crosses your quote, the fill is recorded and positions, P&L, and Greeks update on the next dashboard run.
 
