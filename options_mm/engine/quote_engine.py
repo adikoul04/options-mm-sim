@@ -1,4 +1,4 @@
-"""Quote generation for passive option market making."""
+"""Quote generation for passive option market making in DeltaGrid."""
 
 from __future__ import annotations
 

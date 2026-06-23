@@ -1,1 +1,1 @@
-"""Options market making simulator package."""
+"""DeltaGrid — options market making simulator (Python domain)."""

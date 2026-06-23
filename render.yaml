@@ -1,0 +1,16 @@
+# Render blueprint — deploy DeltaGrid API (free web service).
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: deltagrid-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: FRED_API_KEY
+        sync: false

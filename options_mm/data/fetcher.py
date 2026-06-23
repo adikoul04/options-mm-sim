@@ -5,10 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
 from options_mm import config
+
+MARKET_TIMEZONE = ZoneInfo("America/New_York")
 
 
 @dataclass
@@ -103,12 +106,20 @@ class DataFetcher:
         if as_of.tzinfo is None:
             as_of = as_of.replace(tzinfo=timezone.utc)
 
-        day_start = as_of.replace(hour=0, minute=0, second=0, microsecond=0)
+        local_as_of = as_of.astimezone(MARKET_TIMEZONE)
+        day_start = datetime.combine(
+            local_as_of.date(),
+            datetime.min.time(),
+            tzinfo=MARKET_TIMEZONE,
+        )
         day_end = day_start + timedelta(days=1)
         history = self.get_history(ticker, day_start, day_end, interval="1m")
         closes = history["Close"].dropna()
         if closes.empty:
-            raise ValueError(f"No close data available for {ticker}")
+            raise ValueError(
+                f"No minute-bar data available for {ticker} on {local_as_of.date()}. "
+                "Yahoo Finance only provides recent intraday history; try an earlier replay date."
+            )
 
         index = closes.index
         if index.tz is None:
